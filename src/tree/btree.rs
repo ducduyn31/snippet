@@ -63,7 +63,7 @@ impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
                     self.root = temp_root;
                 } else {
                     self.insert_non_full(&mut root, key, value);
-                    self.root =  Some(root);
+                    self.root = Some(root);
                 }
             }
         }
@@ -97,11 +97,12 @@ impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
         let mut new_node = Box::new(Node::new(child.leaf));
 
         let mid_index = self.degree - 1;
-        let mid_key = child.keys.remove(mid_index);
-        let mid_value = child.values.remove(mid_index);
 
-        new_node.keys = child.keys.split_off(self.degree - 1);
-        new_node.values = child.values.split_off(self.degree - 1);
+        new_node.keys = child.keys.split_off(mid_index + 1);
+        new_node.values = child.values.split_off(mid_index + 1);
+
+        let mid_key = child.keys.pop().unwrap();
+        let mid_value = child.values.pop().unwrap();
         if !child.leaf {
             new_node.children = child.children.split_off(self.degree);
         }
@@ -112,23 +113,23 @@ impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
     }
 
     pub fn search(&self, key: K) -> Option<&V> {
-        match self.root {
-            None => None,
-            Some(ref root) => self.search_node(root, key),
-        }
-    }
+        let mut current_node = self.root.as_ref()?;
 
-    fn search_node<'a>(&self, node: &'a Node<K, V>, key: K) -> Option<&'a V> {
-        let mut i = 0;
-        while i < node.keys.len() && key > node.keys[i] {
-            i += 1;
-        }
-        if i < node.keys.len() && key == node.keys[i] {
-            Some(&node.values[i])
-        } else if node.leaf {
-            None
-        } else {
-            self.search_node(&node.children[i], key)
+        loop {
+            let mut i = 0;
+            while i < current_node.keys.len() && key > current_node.keys[i] {
+                i += 1;
+            }
+
+            if i < current_node.keys.len() && key == current_node.keys[i] {
+                return Some(&current_node.values[i]);
+            }
+
+            if current_node.leaf {
+                return None;
+            }
+
+            current_node = &current_node.children[i];
         }
     }
 
@@ -136,5 +137,3 @@ impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
         self.root.is_none()
     }
 }
-
-
