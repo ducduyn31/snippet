@@ -27,6 +27,12 @@ pub struct BTree<K: Ord + Debug + Clone, V: Clone> {
     degree: usize,
 }
 
+impl<K: Ord + Debug + Clone, V: Clone> Default for BTree<K, V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
     pub fn new() -> Self {
         BTree {
@@ -90,15 +96,15 @@ impl<K: Ord + Debug + Clone, V: Clone> BTree<K, V> {
         let child = &mut parent.children[index];
         let mut new_node = Box::new(Node::new(child.leaf));
 
-        let mid_key = child.keys.pop().unwrap();
-        let mid_value = child.values.pop().unwrap();
+        let mid_index = self.degree - 1;
+        let mid_key = child.keys.remove(mid_index);
+        let mid_value = child.values.remove(mid_index);
 
-        new_node.keys = child.keys.split_off(self.degree);
-        new_node.values = child.values.split_off(self.degree);
+        new_node.keys = child.keys.split_off(self.degree - 1);
+        new_node.values = child.values.split_off(self.degree - 1);
         if !child.leaf {
             new_node.children = child.children.split_off(self.degree);
         }
-
 
         parent.keys.insert(index, mid_key);
         parent.values.insert(index, mid_value);

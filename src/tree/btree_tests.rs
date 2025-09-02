@@ -1,12 +1,12 @@
 #[cfg(test)]
-pub mod btree_tests {
+pub mod tests {
     use crate::tree::BTree;
 
 
     #[test]
     fn it_should_works_with_empty_tree() {
         let tree = BTree::<i32, i32>::new();
-        assert_eq!(tree.is_empty(), true);
+        assert!(tree.is_empty());
         assert_eq!(tree.search(4), None);
     }
 
